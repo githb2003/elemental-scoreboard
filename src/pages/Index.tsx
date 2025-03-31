@@ -92,7 +92,7 @@ const Index = () => {
         </TabsList>
         
         <TabsContent value="scores" className="py-2">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 h-[calc(100vh-4rem)]">
+          <div className="grid grid-cols-5 gap-4 h-screen items-center px-4">
             {elements.map(element => (
               <ElementCard 
                 key={element.id}
