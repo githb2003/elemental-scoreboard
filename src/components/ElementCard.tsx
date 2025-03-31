@@ -27,17 +27,32 @@ const ElementCard = ({ element, onCardClick }: ElementCardProps) => {
   const getBackgroundImage = () => {
     switch (element.id) {
       case 'fire':
-        return 'url(/lovable-uploads/50fe3f71-1ae5-4ec3-a20d-cd2f644a0754.png)';
+        return 'url(/lovable-uploads/98eaa30a-e27c-419d-905e-821f02c4d77f.png)';
       case 'water':
-        return 'url(/water-bg.jpg)';
+        return 'url(/lovable-uploads/98eaa30a-e27c-419d-905e-821f02c4d77f.png)';
       case 'air':
-        return 'url(/air-bg.jpg)';
+        return 'url(/lovable-uploads/98eaa30a-e27c-419d-905e-821f02c4d77f.png)';
       case 'earth':
-        return 'url(/earth-bg.jpg)';
+        return 'url(/lovable-uploads/98eaa30a-e27c-419d-905e-821f02c4d77f.png)';
       case 'lightning':
-        return 'url(/lightning-bg.jpg)';
+        return 'url(/lovable-uploads/b015f7a8-fc8d-4fa0-9478-b83fa98ba18a.png)';
       default:
         return 'none';
+    }
+  };
+
+  const getBackgroundPosition = () => {
+    switch (element.id) {
+      case 'fire':
+        return '0% center'; // Position pour montrer la partie feu de l'image
+      case 'earth':
+        return '33.33% center'; // Position pour montrer la partie terre de l'image
+      case 'air':
+        return '66.66% center'; // Position pour montrer la partie air de l'image
+      case 'water':
+        return '100% center'; // Position pour montrer la partie eau de l'image
+      default:
+        return 'center';
     }
   };
 
@@ -81,8 +96,13 @@ const ElementCard = ({ element, onCardClick }: ElementCardProps) => {
       onClick={handleClick}
     >
       <div 
-        className="absolute inset-0 bg-center bg-cover"
-        style={{ backgroundImage: getBackgroundImage(), opacity: 0.7 }}
+        className="absolute inset-0 bg-cover bg-no-repeat"
+        style={{ 
+          backgroundImage: getBackgroundImage(), 
+          backgroundPosition: element.id !== 'lightning' ? getBackgroundPosition() : 'center',
+          backgroundSize: element.id !== 'lightning' ? '400%' : 'cover',
+          opacity: 0.9
+        }}
       />
       
       <div className="absolute inset-0 bg-gradient-to-br opacity-50"></div>

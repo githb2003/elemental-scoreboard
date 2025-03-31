@@ -8,9 +8,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const initialElements: Element[] = [
   { id: 'fire', name: 'Feu', color: 'fire', points: 0, icon: 'fire' },
-  { id: 'water', name: 'Eau', color: 'water', points: 0, icon: 'droplet' },
-  { id: 'air', name: 'Air', color: 'air', points: 0, icon: 'airVent' },
   { id: 'earth', name: 'Terre', color: 'earth', points: 0, icon: 'earth' },
+  { id: 'air', name: 'Air', color: 'air', points: 0, icon: 'airVent' },
+  { id: 'water', name: 'Eau', color: 'water', points: 0, icon: 'droplet' },
   { id: 'lightning', name: 'Foudre', color: 'lightning', points: 0, icon: 'cloudLightning' },
 ];
 
