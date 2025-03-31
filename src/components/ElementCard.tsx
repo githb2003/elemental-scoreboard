@@ -14,7 +14,6 @@ const ElementCard = ({ element, onCardClick }: ElementCardProps) => {
   const counterRef = useRef<HTMLDivElement>(null);
   const prevPointsRef = useRef(element.points);
 
-  // Effet d'animation lors du changement de points
   useEffect(() => {
     if (prevPointsRef.current !== element.points) {
       setAnimate(true);
@@ -25,19 +24,18 @@ const ElementCard = ({ element, onCardClick }: ElementCardProps) => {
     }
   }, [element.points]);
 
-  // Obtenir l'image de fond en fonction de l'élément
   const getBackgroundImage = () => {
     switch (element.id) {
       case 'fire':
-        return 'url(/fire-bg.jpg)';
-      case 'air':
-        return 'url(/air-bg.jpg)';
+        return 'url(/lovable-uploads/50fe3f71-1ae5-4ec3-a20d-cd2f644a0754.png)';
       case 'water':
         return 'url(/water-bg.jpg)';
-      case 'lightning':
-        return 'url(/lightning-bg.jpg)';
+      case 'air':
+        return 'url(/air-bg.jpg)';
       case 'earth':
         return 'url(/earth-bg.jpg)';
+      case 'lightning':
+        return 'url(/lightning-bg.jpg)';
       default:
         return 'none';
     }
@@ -53,7 +51,6 @@ const ElementCard = ({ element, onCardClick }: ElementCardProps) => {
     }[element.id] || '';
   };
 
-  // Composant d'icône pour chaque élément
   const IconComponent = () => {
     switch (element.id) {
       case 'fire':

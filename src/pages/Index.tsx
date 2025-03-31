@@ -14,19 +14,16 @@ const initialElements: Element[] = [
   { id: 'lightning', name: 'Foudre', color: 'lightning', points: 0, icon: 'cloudLightning' },
 ];
 
-// Clé pour le stockage local
 const STORAGE_KEY = 'elemental-scores';
 
 const Index = () => {
   const [elements, setElements] = useState<Element[]>(() => {
-    // Récupération des scores depuis le stockage local si disponible
     const savedElements = localStorage.getItem(STORAGE_KEY);
     return savedElements ? JSON.parse(savedElements) : initialElements;
   });
   
   const { toast } = useToast();
 
-  // Sauvegarde dans le stockage local à chaque changement
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(elements));
   }, [elements]);
