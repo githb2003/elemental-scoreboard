@@ -1,10 +1,10 @@
 
 import { useState, useEffect } from 'react';
-import { Element, ElementAction } from '@/types/elements';
+import { Element } from '@/types/elements';
 import ElementCard from '@/components/ElementCard';
-import ElementsChart from '@/components/ElementsChart';
-import DashboardHeader from '@/components/DashboardHeader';
+import AdminPanel from '@/components/AdminPanel';
 import { useToast } from "@/components/ui/use-toast";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const initialElements: Element[] = [
   { id: 'fire', name: 'Feu', color: 'fire', points: 0, icon: 'fire' },
@@ -71,28 +71,45 @@ const Index = () => {
   };
 
   const resetScores = () => {
-    setElements(prevElements =>
-      prevElements.map(element => ({ ...element, points: 0 }))
-    );
+    const confirmed = window.confirm("Êtes-vous sûr de vouloir réinitialiser tous les scores ?");
+    if (confirmed) {
+      setElements(prevElements =>
+        prevElements.map(element => ({ ...element, points: 0 }))
+      );
+      toast({
+        title: "Scores réinitialisés",
+        description: "Tous les scores ont été remis à zéro.",
+      });
+    }
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <DashboardHeader resetScores={resetScores} />
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
-        {elements.map(element => (
-          <ElementCard 
-            key={element.id}
-            element={element}
+    <div className="min-h-screen bg-black">
+      <Tabs defaultValue="scores" className="container mx-auto px-4 py-2">
+        <TabsList className="fixed top-4 right-4 z-50">
+          <TabsTrigger value="scores">Scores</TabsTrigger>
+          <TabsTrigger value="admin">Admin</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="scores" className="py-2">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 h-[calc(100vh-4rem)]">
+            {elements.map(element => (
+              <ElementCard 
+                key={element.id}
+                element={element}
+              />
+            ))}
+          </div>
+        </TabsContent>
+        
+        <TabsContent value="admin" className="pt-12 pb-8">
+          <AdminPanel 
+            elements={elements}
             onUpdatePoints={handleUpdatePoints}
+            onResetScores={resetScores}
           />
-        ))}
-      </div>
-      
-      <div className="mt-8">
-        <ElementsChart elements={elements} />
-      </div>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };
