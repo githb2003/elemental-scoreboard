@@ -4,7 +4,7 @@ import { Element } from '@/types/elements';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Fire, AirVent, Droplet, CloudLightning, Earth } from 'lucide-react';
+import { Flame, Wind, Droplet, CloudLightning, GlobeIcon } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 
 interface ElementCardProps {
@@ -22,15 +22,15 @@ const ElementCard = ({ element, onUpdatePoints }: ElementCardProps) => {
   const IconComponent = () => {
     switch (element.id) {
       case 'fire':
-        return <Fire className="h-8 w-8 text-fire" />;
+        return <Flame className="h-8 w-8 text-fire" />;
       case 'air':
-        return <AirVent className="h-8 w-8 text-air" />;
+        return <Wind className="h-8 w-8 text-air" />;
       case 'water':
         return <Droplet className="h-8 w-8 text-water" />;
       case 'lightning':
         return <CloudLightning className="h-8 w-8 text-lightning" />;
       case 'earth':
-        return <Earth className="h-8 w-8 text-earth" />;
+        return <GlobeIcon className="h-8 w-8 text-earth" />;
       default:
         return null;
     }
