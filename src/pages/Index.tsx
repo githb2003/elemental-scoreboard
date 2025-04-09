@@ -123,8 +123,49 @@ const Index = () => {
     }
   };
 
+  // Determine winning team
+  const getWinningTeam = () => {
+    if (!elements.length) return null;
+    
+    let highestScore = -1;
+    let winner = null;
+    
+    for (const element of elements) {
+      if (element.points > highestScore) {
+        highestScore = element.points;
+        winner = element;
+      }
+    }
+    
+    // If all scores are 0, return null
+    if (highestScore === 0) return null;
+    
+    return winner;
+  };
+  
+  const winningTeam = getWinningTeam();
+  
+  const getBackgroundGradient = () => {
+    if (!winningTeam) return 'bg-black';
+    
+    switch (winningTeam.id) {
+      case 'fire':
+        return 'bg-gradient-to-br from-black to-orange-950';
+      case 'air':
+        return 'bg-gradient-to-br from-black to-sky-950';
+      case 'water':
+        return 'bg-gradient-to-br from-black to-blue-950';
+      case 'lightning':
+        return 'bg-gradient-to-br from-black to-purple-950';
+      case 'earth':
+        return 'bg-gradient-to-br from-black to-amber-950';
+      default:
+        return 'bg-black';
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-black">
+    <div className={`min-h-screen transition-colors duration-700 ${getBackgroundGradient()}`}>
       <Tabs defaultValue="scores" className="container mx-auto px-4 py-2">
         <TabsList className="fixed top-4 right-4 z-50">
           <TabsTrigger value="scores">Scores</TabsTrigger>

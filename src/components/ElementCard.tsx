@@ -29,32 +29,17 @@ const ElementCard = ({ element, onCardClick }: ElementCardProps) => {
   const getBackgroundImage = () => {
     switch (element.id) {
       case 'fire':
-        return 'url(/lovable-uploads/98eaa30a-e27c-419d-905e-821f02c4d77f.png)';
+        return 'url("https://images.unsplash.com/photo-1549317336-206569e8475c?q=80&w=500")';
       case 'water':
-        return 'url(/lovable-uploads/98eaa30a-e27c-419d-905e-821f02c4d77f.png)';
+        return 'url("https://images.unsplash.com/photo-1530866495561-507c9faab2ed?q=80&w=500")';
       case 'air':
-        return 'url(/lovable-uploads/98eaa30a-e27c-419d-905e-821f02c4d77f.png)';
+        return 'url("https://images.unsplash.com/photo-1534088568595-a066f410bcda?q=80&w=500")';
       case 'earth':
-        return 'url(/lovable-uploads/98eaa30a-e27c-419d-905e-821f02c4d77f.png)';
+        return 'url("https://images.unsplash.com/photo-1509587584298-0f3b3a3a1797?q=80&w=500")';
       case 'lightning':
-        return 'url(/lovable-uploads/b015f7a8-fc8d-4fa0-9478-b83fa98ba18a.png)';
+        return 'url("https://images.unsplash.com/photo-1461511669078-d46bf351cd6e?q=80&w=500")';
       default:
         return 'none';
-    }
-  };
-
-  const getBackgroundPosition = () => {
-    switch (element.id) {
-      case 'fire':
-        return '0% center';
-      case 'earth':
-        return '33.33% center';
-      case 'air':
-        return '66.66% center';
-      case 'water':
-        return '100% center';
-      default:
-        return 'center';
     }
   };
 
@@ -101,8 +86,7 @@ const ElementCard = ({ element, onCardClick }: ElementCardProps) => {
         className="absolute inset-0 bg-cover bg-no-repeat"
         style={{ 
           backgroundImage: getBackgroundImage(), 
-          backgroundPosition: element.id !== 'lightning' ? getBackgroundPosition() : 'center',
-          backgroundSize: element.id !== 'lightning' ? '400%' : 'cover',
+          backgroundPosition: 'center',
           opacity: 0.9
         }}
       />
