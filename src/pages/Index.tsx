@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Element } from '@/types/elements';
 import ElementCard from '@/components/ElementCard';
@@ -9,6 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { websocketService } from '@/services/websocketService';
 import useWebSocket from '@/hooks/useWebSocket';
+import PasswordProtection from '@/components/PasswordProtection';
 
 const initialElements: Element[] = [
   { id: 'fire', name: 'Feu', color: 'fire', points: 0, icon: 'fire' },
@@ -29,15 +29,12 @@ const Index = () => {
   const { toast } = useToast();
   const { isConnected, subscribeToScoreUpdates, sendMessage } = useWebSocket();
 
-  // Set up WebSocket listeners
   useEffect(() => {
-    // Subscribe to score updates from other clients
     const unsubscribe = subscribeToScoreUpdates((updatedElements) => {
       setElements(updatedElements);
       localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedElements));
     });
     
-    // Connect to WebSocket service
     websocketService.connect();
     
     return () => {
@@ -45,7 +42,6 @@ const Index = () => {
     };
   }, [subscribeToScoreUpdates]);
 
-  // Save to local storage on change
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(elements));
   }, [elements]);
@@ -106,7 +102,6 @@ const Index = () => {
     
     setElements(updatedElements);
     
-    // Broadcast the update to all clients
     if (isConnected) {
       sendMessage('scoreUpdate', updatedElements);
     }
@@ -119,7 +114,6 @@ const Index = () => {
       
       setElements(resetElements);
       
-      // Broadcast reset to all clients
       if (isConnected) {
         sendMessage('scoreUpdate', resetElements);
       }
@@ -159,24 +153,26 @@ const Index = () => {
         </TabsContent>
         
         <TabsContent value="admin" className="pt-12 pb-8">
-          <AdminPanel 
-            elements={elements}
-            onUpdatePoints={handleUpdatePoints}
-            onResetScores={resetScores}
-          />
-          {!isConnected && (
-            <div className="max-w-xl mx-auto mt-4 p-4 bg-red-100 text-red-800 rounded-md">
-              ⚠️ La connexion WebSocket n'est pas établie. Les mises à jour en temps réel ne fonctionneront pas.
-            </div>
-          )}
-          {isConnected && (
-            <div className="max-w-xl mx-auto mt-4 p-2 text-center">
-              <span className="inline-flex items-center text-sm text-green-600">
-                <span className="w-2 h-2 bg-green-600 rounded-full mr-2 animate-pulse"></span> 
-                Connecté en temps réel
-              </span>
-            </div>
-          )}
+          <PasswordProtection>
+            <AdminPanel 
+              elements={elements}
+              onUpdatePoints={handleUpdatePoints}
+              onResetScores={resetScores}
+            />
+            {!isConnected && (
+              <div className="max-w-xl mx-auto mt-4 p-4 bg-red-100 text-red-800 rounded-md">
+                ⚠️ La connexion WebSocket n'est pas établie. Les mises à jour en temps réel ne fonctionneront pas.
+              </div>
+            )}
+            {isConnected && (
+              <div className="max-w-xl mx-auto mt-4 p-2 text-center">
+                <span className="inline-flex items-center text-sm text-green-600">
+                  <span className="w-2 h-2 bg-green-600 rounded-full mr-2 animate-pulse"></span> 
+                  Connecté en temps réel
+                </span>
+              </div>
+            )}
+          </PasswordProtection>
         </TabsContent>
       </Tabs>
     </div>
