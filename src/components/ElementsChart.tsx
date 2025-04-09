@@ -1,18 +1,22 @@
 
-import React, { useEffect, useRef } from 'react';
 import { Element } from '@/types/elements';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
+import { 
+  ChartContainer, 
+  ChartTooltip, 
+  ChartTooltipContent 
+} from '@/components/ui/chart';
+import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis } from 'recharts';
 
 interface ElementsChartProps {
   elements: Element[];
 }
 
-const ElementsChart: React.FC<ElementsChartProps> = ({ elements }) => {
+const ElementsChart = ({ elements }: ElementsChartProps) => {
   const chartData = elements.map(element => ({
     name: element.name,
     points: element.points,
-    color: element.color,
+    color: getElementColor(element.id),
     id: element.id
   }));
 
@@ -27,6 +31,15 @@ const ElementsChart: React.FC<ElementsChartProps> = ({ elements }) => {
     }
   };
 
+  // Create chart config for shadcn/ui chart
+  const chartConfig = {
+    fire: { color: 'hsl(12, 80%, 50%)' },
+    air: { color: 'hsl(200, 70%, 80%)' },
+    water: { color: 'hsl(210, 100%, 50%)' },
+    lightning: { color: 'hsl(250, 90%, 60%)' },
+    earth: { color: 'hsl(30, 60%, 40%)' },
+  };
+
   return (
     <Card className="shadow-lg border rounded-xl">
       <CardHeader>
@@ -34,22 +47,22 @@ const ElementsChart: React.FC<ElementsChartProps> = ({ elements }) => {
       </CardHeader>
       <CardContent>
         <div className="w-full h-80">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-              <XAxis dataKey="name" />
-              <YAxis />
-              <Tooltip 
-                contentStyle={{ borderRadius: '8px' }}
-                formatter={(value, name) => [`${value} points`, 'Score']}
-                labelStyle={{ fontWeight: 'bold' }}
-              />
-              <Bar dataKey="points">
-                {chartData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={getElementColor(entry.id)} />
-                ))}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
+          <ChartContainer config={chartConfig}>
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                <XAxis dataKey="name" />
+                <YAxis />
+                <ChartTooltip>
+                  <ChartTooltipContent />
+                </ChartTooltip>
+                <Bar 
+                  dataKey="points" 
+                  radius={[4, 4, 0, 0]}
+                  className="fill-[--color-fire] data-[name=air]:fill-[--color-air] data-[name=water]:fill-[--color-water] data-[name=lightning]:fill-[--color-lightning] data-[name=earth]:fill-[--color-earth]"
+                />
+              </BarChart>
+            </ResponsiveContainer>
+          </ChartContainer>
         </div>
       </CardContent>
     </Card>

@@ -1,5 +1,5 @@
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Element } from '@/types/elements';
 import { Card, CardContent } from '@/components/ui/card';
 import { Flame, Wind, Droplet, CloudLightning, GlobeIcon } from 'lucide-react';
@@ -11,18 +11,20 @@ interface ElementCardProps {
 
 const ElementCard = ({ element, onCardClick }: ElementCardProps) => {
   const [animate, setAnimate] = useState(false);
-  const counterRef = useRef<HTMLDivElement>(null);
-  const prevPointsRef = useRef(element.points);
+  const [prevPoints, setPrevPoints] = useState(element.points);
+  const [direction, setDirection] = useState<'up' | 'down' | null>(null);
 
   useEffect(() => {
-    if (prevPointsRef.current !== element.points) {
+    if (prevPoints !== element.points) {
+      const dir = element.points > prevPoints ? 'up' : 'down';
+      setDirection(dir);
       setAnimate(true);
-      prevPointsRef.current = element.points;
+      setPrevPoints(element.points);
 
-      const timer = setTimeout(() => setAnimate(false), 500);
+      const timer = setTimeout(() => setAnimate(false), 600);
       return () => clearTimeout(timer);
     }
-  }, [element.points]);
+  }, [element.points, prevPoints]);
 
   const getBackgroundImage = () => {
     switch (element.id) {
@@ -44,13 +46,13 @@ const ElementCard = ({ element, onCardClick }: ElementCardProps) => {
   const getBackgroundPosition = () => {
     switch (element.id) {
       case 'fire':
-        return '0% center'; // Position pour montrer la partie feu de l'image
+        return '0% center';
       case 'earth':
-        return '33.33% center'; // Position pour montrer la partie terre de l'image
+        return '33.33% center';
       case 'air':
-        return '66.66% center'; // Position pour montrer la partie air de l'image
+        return '66.66% center';
       case 'water':
-        return '100% center'; // Position pour montrer la partie eau de l'image
+        return '100% center';
       default:
         return 'center';
     }
@@ -116,13 +118,25 @@ const ElementCard = ({ element, onCardClick }: ElementCardProps) => {
           {element.name}
         </h3>
         
-        <div 
-          ref={counterRef} 
-          className={`text-7xl font-bold text-center mt-2 text-white drop-shadow-lg ${
-            animate ? 'scale-125 transition-all duration-300' : 'transition-all duration-300'
-          }`}
-        >
-          {element.points}
+        <div className="relative">
+          {animate && direction === 'up' && (
+            <div className="absolute -top-8 left-1/2 -translate-x-1/2 text-green-400 font-bold opacity-0 animate-fadeUpAndOut">
+              +{element.points - prevPoints}
+            </div>
+          )}
+          
+          {animate && direction === 'down' && (
+            <div className="absolute -top-8 left-1/2 -translate-x-1/2 text-red-400 font-bold opacity-0 animate-fadeUpAndOut">
+              -{prevPoints - element.points}
+            </div>
+          )}
+          
+          <div 
+            className={`text-7xl font-bold text-center mt-2 text-white drop-shadow-lg transition-all duration-300 
+              ${animate ? 'scale-125 ' + (direction === 'up' ? 'text-green-300' : direction === 'down' ? 'text-red-300' : '') : ''}`}
+          >
+            {element.points}
+          </div>
         </div>
       </CardContent>
     </Card>

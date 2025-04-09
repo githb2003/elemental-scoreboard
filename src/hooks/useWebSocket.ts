@@ -9,7 +9,7 @@ interface WebSocketOptions {
 
 export const useWebSocket = (options: WebSocketOptions = {}) => {
   const { autoConnect = true } = options;
-  const [isConnected, setIsConnected] = useState(false);
+  const [isConnected, setIsConnected] = useState(websocketService.isConnected());
   const [lastMessage, setLastMessage] = useState<any>(null);
   
   // Store subscriptions for cleanup
@@ -47,6 +47,11 @@ export const useWebSocket = (options: WebSocketOptions = {}) => {
     return websocketService.sendMessage(type, payload);
   };
   
+  // Force reconnection
+  const reconnect = () => {
+    return websocketService.connect();
+  };
+  
   // Common use case: subscribe to score updates
   const subscribeToScoreUpdates = (callback: (elements: any[]) => void) => {
     return subscribe('scoreUpdate', callback);
@@ -57,6 +62,7 @@ export const useWebSocket = (options: WebSocketOptions = {}) => {
     lastMessage,
     sendMessage,
     subscribe,
+    reconnect,
     subscribeToScoreUpdates
   };
 };

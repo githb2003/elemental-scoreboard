@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Element } from '@/types/elements';
 import ElementCard from '@/components/ElementCard';
@@ -9,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { websocketService } from '@/services/websocketService';
 import useWebSocket from '@/hooks/useWebSocket';
 import PasswordProtection from '@/components/PasswordProtection';
+import { Button } from '@/components/ui/button';
 
 const initialElements: Element[] = [
   { id: 'fire', name: 'Feu', color: 'fire', points: 0, icon: 'fire' },
@@ -27,15 +29,13 @@ const Index = () => {
   });
   
   const { toast } = useToast();
-  const { isConnected, subscribeToScoreUpdates, sendMessage } = useWebSocket();
+  const { isConnected, subscribeToScoreUpdates, sendMessage, reconnect } = useWebSocket();
 
   useEffect(() => {
     const unsubscribe = subscribeToScoreUpdates((updatedElements) => {
       setElements(updatedElements);
       localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedElements));
     });
-    
-    websocketService.connect();
     
     return () => {
       unsubscribe();
@@ -50,50 +50,41 @@ const Index = () => {
     const updatedElements = elements.map(element => {
       if (element.id === id) {
         let newPoints = element.points;
+        let actionDescription = '';
         
         switch (action) {
           case 'INCREMENT':
             newPoints = element.points + 1;
-            toast({
-              title: `+1 point pour l'équipe ${element.name}`,
-              description: `Nouveau score: ${newPoints} points`,
-            });
+            actionDescription = `+1 point pour l'équipe ${element.name}`;
             break;
           case 'DECREMENT':
             newPoints = Math.max(0, element.points - 1);
-            toast({
-              title: `-1 point pour l'équipe ${element.name}`,
-              description: `Nouveau score: ${newPoints} points`,
-            });
+            actionDescription = `-1 point pour l'équipe ${element.name}`;
             break;
           case 'INCREMENT_BY':
             if (value !== undefined) {
               newPoints = element.points + value;
-              toast({
-                title: `+${value} points pour l'équipe ${element.name}`,
-                description: `Nouveau score: ${newPoints} points`,
-              });
+              actionDescription = `+${value} points pour l'équipe ${element.name}`;
             }
             break;
           case 'DECREMENT_BY':
             if (value !== undefined) {
               newPoints = Math.max(0, element.points - value);
-              toast({
-                title: `-${value} points pour l'équipe ${element.name}`,
-                description: `Nouveau score: ${newPoints} points`,
-              });
+              actionDescription = `-${value} points pour l'équipe ${element.name}`;
             }
             break;
           case 'SET':
             if (value !== undefined) {
               newPoints = value;
-              toast({
-                title: `Score de l'équipe ${element.name} modifié`,
-                description: `Nouveau score: ${newPoints} points`,
-              });
+              actionDescription = `Score de l'équipe ${element.name} modifié`;
             }
             break;
         }
+        
+        toast({
+          title: actionDescription,
+          description: `Nouveau score: ${newPoints} points`,
+        });
         
         return { ...element, points: newPoints };
       }
@@ -104,6 +95,13 @@ const Index = () => {
     
     if (isConnected) {
       sendMessage('scoreUpdate', updatedElements);
+    } else {
+      toast({
+        title: "Erreur de connexion",
+        description: "Les autres clients ne recevront pas cette mise à jour. Reconnexion en cours...",
+        variant: "destructive",
+      });
+      reconnect();
     }
   };
 
@@ -160,8 +158,18 @@ const Index = () => {
               onResetScores={resetScores}
             />
             {!isConnected && (
-              <div className="max-w-xl mx-auto mt-4 p-4 bg-red-100 text-red-800 rounded-md">
-                ⚠️ La connexion WebSocket n'est pas établie. Les mises à jour en temps réel ne fonctionneront pas.
+              <div className="max-w-xl mx-auto mt-4 p-4 bg-red-100 text-red-800 rounded-md flex items-center justify-between">
+                <div>
+                  <span className="font-bold">⚠️ La connexion WebSocket n'est pas établie.</span>
+                  <p>Les mises à jour en temps réel ne fonctionneront pas.</p>
+                </div>
+                <Button 
+                  variant="secondary" 
+                  onClick={() => reconnect()}
+                  className="ml-4"
+                >
+                  Reconnecter
+                </Button>
               </div>
             )}
             {isConnected && (
