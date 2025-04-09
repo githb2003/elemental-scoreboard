@@ -118,7 +118,9 @@ const ElementCard = ({ element, onCardClick }: ElementCardProps) => {
         
         <div 
           ref={counterRef} 
-          className={`text-7xl font-bold text-center mt-2 text-white drop-shadow-lg ${animate ? 'animate-pulse' : ''}`}
+          className={`text-7xl font-bold text-center mt-2 text-white drop-shadow-lg ${
+            animate ? 'scale-125 transition-all duration-300' : 'transition-all duration-300'
+          }`}
         >
           {element.points}
         </div>
