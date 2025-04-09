@@ -13,13 +13,6 @@ interface ElementsChartProps {
 }
 
 const ElementsChart = ({ elements }: ElementsChartProps) => {
-  const chartData = elements.map(element => ({
-    name: element.name,
-    points: element.points,
-    color: getElementColor(element.id),
-    id: element.id
-  }));
-
   const getElementColor = (id: string) => {
     switch (id) {
       case 'fire': return 'hsl(12, 80%, 50%)';
@@ -30,6 +23,13 @@ const ElementsChart = ({ elements }: ElementsChartProps) => {
       default: return '#888';
     }
   };
+
+  const chartData = elements.map(element => ({
+    name: element.name,
+    points: element.points,
+    color: getElementColor(element.id),
+    id: element.id
+  }));
 
   // Create chart config for shadcn/ui chart
   const chartConfig = {
