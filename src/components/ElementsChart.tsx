@@ -12,6 +12,7 @@ interface ElementsChartProps {
 }
 
 const ElementsChart = ({ elements }: ElementsChartProps) => {
+  // Define this function first to avoid the initialization error
   const getElementColor = (id: string) => {
     switch (id) {
       case 'fire': return 'hsl(12, 80%, 50%)';
