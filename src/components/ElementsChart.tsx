@@ -2,11 +2,10 @@
 import { Element } from '@/types/elements';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { 
-  ChartContainer, 
-  ChartTooltip, 
+  ChartContainer,
   ChartTooltipContent 
 } from '@/components/ui/chart';
-import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis } from 'recharts';
+import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from 'recharts';
 
 interface ElementsChartProps {
   elements: Element[];
@@ -52,9 +51,22 @@ const ElementsChart = ({ elements }: ElementsChartProps) => {
               <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
                 <XAxis dataKey="name" />
                 <YAxis />
-                <ChartTooltip>
-                  <ChartTooltipContent />
-                </ChartTooltip>
+                <Tooltip 
+                  content={({ active, payload }) => {
+                    if (active && payload && payload.length) {
+                      const data = payload[0].payload;
+                      return (
+                        <div className="rounded-lg border bg-background p-2 shadow-md">
+                          <div className="grid grid-cols-2 gap-2">
+                            <div className="font-medium">{data.name}</div>
+                            <div className="font-mono text-right">{data.points} points</div>
+                          </div>
+                        </div>
+                      );
+                    }
+                    return null;
+                  }}
+                />
                 <Bar 
                   dataKey="points" 
                   radius={[4, 4, 0, 0]}
