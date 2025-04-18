@@ -1,10 +1,8 @@
-
 import { useState, useEffect } from 'react';
 import { Element } from '@/types/elements';
 import ElementCard from '@/components/ElementCard';
 import AdminPanel from '@/components/AdminPanel';
 import DashboardHeader from '@/components/DashboardHeader';
-import ElementsChart from '@/components/ElementsChart';
 import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { websocketService } from '@/services/websocketService';
@@ -123,7 +121,6 @@ const Index = () => {
     }
   };
 
-  // Determine winning team
   const getWinningTeam = () => {
     if (!elements.length) return null;
     
@@ -137,7 +134,6 @@ const Index = () => {
       }
     }
     
-    // If all scores are 0, return null
     if (highestScore === 0) return null;
     
     return winner;
@@ -169,7 +165,6 @@ const Index = () => {
       <Tabs defaultValue="scores" className="container mx-auto px-4 py-2">
         <TabsList className="fixed top-4 right-4 z-50">
           <TabsTrigger value="scores">Scores</TabsTrigger>
-          <TabsTrigger value="chart">Graphique</TabsTrigger>
           <TabsTrigger value="admin">Admin</TabsTrigger>
         </TabsList>
         
@@ -181,13 +176,6 @@ const Index = () => {
                 element={element}
               />
             ))}
-          </div>
-        </TabsContent>
-        
-        <TabsContent value="chart" className="pt-12 pb-8">
-          <div className="container mx-auto">
-            <DashboardHeader resetScores={resetScores} />
-            <ElementsChart elements={elements} />
           </div>
         </TabsContent>
         
