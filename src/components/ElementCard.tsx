@@ -29,15 +29,15 @@ const ElementCard = ({ element, onCardClick }: ElementCardProps) => {
   const getBackgroundImage = () => {
     switch (element.id) {
       case 'fire':
-        return 'url("https://images.unsplash.com/photo-1549317336-206569e8475c?q=80&w=500")';
+        return 'url("/lovable-uploads/ddeea1a9-0a13-4192-a794-6be7feaad9de.png")';
       case 'water':
-        return 'url("https://images.unsplash.com/photo-1530866495561-507c9faab2ed?q=80&w=500")';
+        return 'url("/lovable-uploads/cd9afc21-b5f9-48af-8012-3cdd24137ea8.png")';
       case 'air':
-        return 'url("https://images.unsplash.com/photo-1534088568595-a066f410bcda?q=80&w=500")';
+        return 'url("/lovable-uploads/86ee5a90-3e88-45c0-ad4c-8b0c0bb4f83d.png")';
       case 'earth':
-        return 'url("https://images.unsplash.com/photo-1509587584298-0f3b3a3a1797?q=80&w=500")';
+        return 'url("/lovable-uploads/1b44d083-8613-49de-8892-f8bbae6d79a7.png")';
       case 'lightning':
-        return 'url("https://images.unsplash.com/photo-1461511669078-d46bf351cd6e?q=80&w=500")';
+        return 'url("/lovable-uploads/6a479c0c-6695-439d-9549-a00f009acd38.png")';
       default:
         return 'none';
     }
