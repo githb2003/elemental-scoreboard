@@ -42,12 +42,34 @@ const ElementCard = ({ element, onCardClick }: ElementCardProps) => {
         return 'none';
     }
   };
+  
+  const IconComponent = () => {
+    switch (element.id) {
+      case 'fire':
+        return <Flame className="h-12 w-12 text-orange-200" />;
+      case 'air':
+        return <Wind className="h-12 w-12 text-sky-200" />;
+      case 'water':
+        return <Droplet className="h-12 w-12 text-blue-200" />;
+      case 'lightning':
+        return <CloudLightning className="h-12 w-12 text-purple-200" />;
+      case 'earth':
+        return <GlobeIcon className="h-12 w-12 text-amber-200" />;
+      default:
+        return null;
+    }
+  };
 
-  // Suppression du dégradé de couleur et modification du style de fond
+  const handleClick = () => {
+    if (onCardClick) {
+      onCardClick(element.id);
+    }
+  };
+
   return (
     <Card 
       className={`relative overflow-hidden cursor-pointer h-full transition-all duration-300 border-2 shadow-lg hover:shadow-xl hover:scale-105`}
-      onClick={onCardClick}
+      onClick={handleClick}
     >
       <div 
         className="absolute inset-0 bg-cover bg-no-repeat"
