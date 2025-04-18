@@ -76,8 +76,8 @@ const ElementCard = ({ element, onCardClick }: ElementCardProps) => {
         style={{ 
           backgroundImage: getBackgroundImage(), 
           backgroundPosition: 'center',
-          backgroundSize: 'cover', // Assurez-vous que l'image couvre tout le fond
-          opacity: 1 // Image complètement visible sans filtre
+          backgroundSize: 'cover',
+          opacity: 0.8
         }}
       />
       
