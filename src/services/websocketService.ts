@@ -1,6 +1,9 @@
 
 // A simple WebSocket service for real-time updates
 
+// Utilisons BroadcastChannel pour la communication entre onglets
+const broadcastChannel = typeof window !== 'undefined' ? new BroadcastChannel('elemental-scores') : null;
+
 class WebSocketService {
   private socket: WebSocket | null = null;
   private listeners: Map<string, ((data: any) => void)[]> = new Map();
@@ -9,40 +12,68 @@ class WebSocketService {
   private maxReconnectAttempts = 5;
   private connectionPromise: Promise<boolean> | null = null;
   private connectionResolve: ((value: boolean) => void) | null = null;
+  private useLocalSync: boolean = true; // Utiliser la synchronisation locale par défaut
+  
+  constructor() {
+    // Écouter les messages d'autres onglets
+    if (broadcastChannel) {
+      broadcastChannel.onmessage = (event) => {
+        if (event.data && event.data.type === 'scoreUpdate') {
+          this.notifyListeners('scoreUpdate', event.data.payload);
+        }
+      };
+    }
+  }
   
   connect() {
-    // If already connecting, return the existing promise
+    // Si déjà en train de se connecter, renvoyer la promesse existante
     if (this.connectionPromise && this.socket && this.socket.readyState === WebSocket.CONNECTING) {
       return this.connectionPromise;
     }
     
-    // Create a new connection promise
+    // Créer une nouvelle promesse de connexion
     this.connectionPromise = new Promise((resolve) => {
       this.connectionResolve = resolve;
       
-      // Use secure WebSocket if on HTTPS
-      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-      const host = window.location.host;
-      
+      // Essayer d'abord en mode WebSocket
+      this.connectWebSocket()
+        .then(success => {
+          if (!success) {
+            console.log('WebSocket connection failed, using local sync only');
+            this.useLocalSync = true;
+          }
+          if (this.connectionResolve) {
+            this.connectionResolve(true);
+            this.connectionResolve = null;
+          }
+        });
+    });
+    
+    return this.connectionPromise;
+  }
+  
+  private connectWebSocket(): Promise<boolean> {
+    return new Promise((resolve) => {
       try {
-        // Close any existing connection
+        // Fermer toute connexion existante
         if (this.socket && this.socket.readyState === WebSocket.OPEN) {
           this.socket.close();
         }
+        
+        // Utiliser WebSocket sécurisé si sur HTTPS
+        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        const host = window.location.host;
         
         this.socket = new WebSocket(`${protocol}//${host}/ws`);
         
         this.socket.onopen = () => {
           console.log('WebSocket connected');
           this.reconnectAttempts = 0;
+          this.useLocalSync = false;
           
-          // Notify all listeners of connection established
+          // Notifier tous les écouteurs de la connexion établie
           this.notifyListeners('connection', { status: 'connected' });
-          
-          if (this.connectionResolve) {
-            this.connectionResolve(true);
-            this.connectionResolve = null;
-          }
+          resolve(true);
         };
         
         this.socket.onmessage = (event) => {
@@ -59,39 +90,37 @@ class WebSocketService {
         this.socket.onclose = () => {
           console.log('WebSocket connection closed');
           
-          // Notify listeners of disconnection
+          // Notifier les écouteurs de la déconnexion
           this.notifyListeners('connection', { status: 'disconnected' });
           
-          if (this.connectionResolve) {
-            this.connectionResolve(false);
-            this.connectionResolve = null;
-          }
-          
           this.attemptReconnect();
+          resolve(false);
         };
         
         this.socket.onerror = (error) => {
           console.error('WebSocket error:', error);
           // Socket will automatically close after error
+          resolve(false);
         };
+        
+        // Timeout au cas où la connexion prend trop de temps
+        setTimeout(() => {
+          if (this.socket && this.socket.readyState !== WebSocket.OPEN) {
+            resolve(false);
+          }
+        }, 5000);
+        
       } catch (error) {
         console.error('Failed to establish WebSocket connection:', error);
-        
-        if (this.connectionResolve) {
-          this.connectionResolve(false);
-          this.connectionResolve = null;
-        }
-        
-        this.attemptReconnect();
+        resolve(false);
       }
     });
-    
-    return this.connectionPromise;
   }
   
   private attemptReconnect() {
     if (this.reconnectAttempts >= this.maxReconnectAttempts) {
       console.log('Max reconnect attempts reached');
+      this.useLocalSync = true;
       return;
     }
     
@@ -104,27 +133,35 @@ class WebSocketService {
     
     this.reconnectTimeout = setTimeout(() => {
       console.log(`Attempting to reconnect (${this.reconnectAttempts}/${this.maxReconnectAttempts})`);
-      this.connect();
+      this.connectWebSocket();
     }, delay);
   }
   
   isConnected(): boolean {
+    if (this.useLocalSync) return false;
     return this.socket !== null && this.socket.readyState === WebSocket.OPEN;
   }
   
   sendMessage(type: string, payload: any) {
-    if (!this.socket || this.socket.readyState !== WebSocket.OPEN) {
-      console.error('Cannot send message, WebSocket is not connected');
-      return false;
+    // Diffuser aux autres onglets via BroadcastChannel
+    if (broadcastChannel) {
+      broadcastChannel.postMessage({ type, payload });
     }
     
-    try {
-      this.socket.send(JSON.stringify({ type, payload }));
-      return true;
-    } catch (error) {
-      console.error('Failed to send WebSocket message:', error);
-      return false;
+    // Notifier les écouteurs locaux
+    this.notifyListeners(type, payload);
+    
+    // Envoyer via WebSocket si disponible
+    if (!this.useLocalSync && this.socket && this.socket.readyState === WebSocket.OPEN) {
+      try {
+        this.socket.send(JSON.stringify({ type, payload }));
+        return true;
+      } catch (error) {
+        console.error('Failed to send WebSocket message:', error);
+      }
     }
+    
+    return this.useLocalSync; // Considéré comme réussi en mode local
   }
   
   subscribe(eventType: string, callback: (data: any) => void) {
@@ -134,7 +171,7 @@ class WebSocketService {
     
     this.listeners.get(eventType)?.push(callback);
     
-    // Return unsubscribe function
+    // Renvoyer la fonction de désabonnement
     return () => {
       const callbacks = this.listeners.get(eventType) || [];
       const index = callbacks.indexOf(callback);
@@ -165,9 +202,13 @@ class WebSocketService {
       this.socket.close();
       this.socket = null;
     }
+    
+    if (broadcastChannel) {
+      broadcastChannel.close();
+    }
   }
 }
 
-// Export singleton instance
+// Exporter une instance singleton
 export const websocketService = new WebSocketService();
 export default websocketService;

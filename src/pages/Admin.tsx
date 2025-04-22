@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { Element } from '@/types/elements';
 import AdminPanel from '@/components/AdminPanel';
 import PasswordProtection from '@/components/PasswordProtection';
-import { websocketService } from '@/services/websocketService';
+import WSConnectionStatus from '@/components/WSConnectionStatus';
 import useWebSocket from '@/hooks/useWebSocket';
 import { useToast } from "@/hooks/use-toast";
 
@@ -81,13 +81,14 @@ const Admin = () => {
     setElements(updatedElements);
     localStorage.setItem('elemental-scores', JSON.stringify(updatedElements));
     
-    if (isConnected) {
-      sendMessage('scoreUpdate', updatedElements);
-    } else {
+    // Envoyer la mise à jour - fonctionnera même en mode local grâce au BroadcastChannel
+    sendMessage('scoreUpdate', updatedElements);
+    
+    if (!isConnected) {
       toast({
-        title: "Erreur de connexion",
-        description: "Les autres clients ne recevront pas cette mise à jour. Reconnexion en cours...",
-        variant: "destructive",
+        title: "Mode hors ligne",
+        description: "Synchronisation entre onglets uniquement. Tentative de reconnexion...",
+        variant: "default",
       });
       reconnect();
     }
@@ -100,9 +101,7 @@ const Admin = () => {
       setElements(resetElements);
       localStorage.setItem('elemental-scores', JSON.stringify(resetElements));
       
-      if (isConnected) {
-        sendMessage('scoreUpdate', resetElements);
-      }
+      sendMessage('scoreUpdate', resetElements);
       
       toast({
         title: "Scores réinitialisés",
@@ -114,20 +113,14 @@ const Admin = () => {
   return (
     <div className="min-h-screen bg-black text-white pt-8">
       <PasswordProtection>
+        <div className="pb-4">
+          <WSConnectionStatus className="max-w-xl mx-auto" />
+        </div>
         <AdminPanel 
           elements={elements}
           onUpdatePoints={handleUpdatePoints}
           onResetScores={resetScores}
         />
-        {!isConnected && (
-          <div className="max-w-xl mx-auto mt-4 p-4 bg-red-100 text-red-800 rounded-md">
-            <span className="font-bold">⚠️ La connexion WebSocket n'est pas établie.</span>
-            <p>Les mises à jour en temps réel ne fonctionneront pas.</p>
-            <button onClick={reconnect} className="mt-2 px-4 py-2 bg-red-800 text-white rounded">
-              Reconnecter
-            </button>
-          </div>
-        )}
       </PasswordProtection>
     </div>
   );

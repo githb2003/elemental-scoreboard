@@ -5,6 +5,7 @@ import ElementCard from '@/components/ElementCard';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import useWebSocket from '@/hooks/useWebSocket';
+import WSConnectionStatus from '@/components/WSConnectionStatus';
 
 const Scoreboard = () => {
   const [elements, setElements] = useState<Element[]>(() => {
@@ -79,6 +80,11 @@ const Scoreboard = () => {
             Admin
           </Button>
         </div>
+        
+        <div className="fixed top-4 left-4 z-50 w-48">
+          <WSConnectionStatus />
+        </div>
+        
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 h-screen items-center px-4">
           {elements.map(element => (
             <ElementCard 
