@@ -1,5 +1,5 @@
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { websocketService } from '@/services/websocketService';
 
 interface WebSocketOptions {
@@ -36,26 +36,26 @@ export const useWebSocket = (options: WebSocketOptions = {}) => {
   }, [autoConnect]);
   
   // Function to subscribe to specific events
-  const subscribe = (eventType: string, callback: (data: any) => void) => {
+  const subscribe = useCallback((eventType: string, callback: (data: any) => void) => {
     const unsubscribe = websocketService.subscribe(eventType, callback);
     subscriptions.current.push(unsubscribe);
     return unsubscribe;
-  };
+  }, []);
   
   // Function to send messages
-  const sendMessage = (type: string, payload: any) => {
+  const sendMessage = useCallback((type: string, payload: any) => {
     return websocketService.sendMessage(type, payload);
-  };
+  }, []);
   
   // Force reconnection
-  const reconnect = () => {
+  const reconnect = useCallback(() => {
     return websocketService.connect();
-  };
+  }, []);
   
   // Common use case: subscribe to score updates
-  const subscribeToScoreUpdates = (callback: (elements: any[]) => void) => {
+  const subscribeToScoreUpdates = useCallback((callback: (elements: any[]) => void) => {
     return subscribe('scoreUpdate', callback);
-  };
+  }, [subscribe]);
   
   return {
     isConnected,

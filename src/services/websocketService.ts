@@ -31,16 +31,24 @@ class WebSocketService {
       return this.connectionPromise;
     }
     
+    // Reset reconnect attempts when manually connecting
+    this.reconnectAttempts = 0;
+    
     // Créer une nouvelle promesse de connexion
     this.connectionPromise = new Promise((resolve) => {
       this.connectionResolve = resolve;
       
-      // Essayer d'abord en mode WebSocket
+      // Fallback to local sync immediately to ensure functionality
+      this.useLocalSync = true;
+      
+      // Try WebSocket connection
       this.connectWebSocket()
         .then(success => {
-          if (!success) {
+          if (success) {
+            this.useLocalSync = false;
+            console.log('WebSocket connection established');
+          } else {
             console.log('WebSocket connection failed, using local sync only');
-            this.useLocalSync = true;
           }
           if (this.connectionResolve) {
             this.connectionResolve(true);
@@ -56,20 +64,46 @@ class WebSocketService {
     return new Promise((resolve) => {
       try {
         // Fermer toute connexion existante
-        if (this.socket && this.socket.readyState === WebSocket.OPEN) {
+        if (this.socket) {
           this.socket.close();
+          this.socket = null;
         }
         
-        // Utiliser WebSocket sécurisé si sur HTTPS
-        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-        const host = window.location.host;
+        // In development, use a direct WebSocket URL that matches the current page protocol
+        const isLocalhost = window.location.hostname === 'localhost' || 
+                           window.location.hostname === '127.0.0.1';
         
-        this.socket = new WebSocket(`${protocol}//${host}/ws`);
+        // Determine WebSocket URL based on environment
+        let wsUrl: string;
+        if (isLocalhost) {
+          // For local development
+          const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+          const port = window.location.port || (protocol === 'wss:' ? '443' : '80');
+          wsUrl = `${protocol}//${window.location.hostname}:${port}/ws`;
+        } else {
+          // For production/staging
+          const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+          const host = window.location.host;
+          wsUrl = `${protocol}//${host}/ws`;
+        }
+        
+        console.log(`Attempting WebSocket connection to ${wsUrl}`);
+        
+        this.socket = new WebSocket(wsUrl);
+        
+        // Set a timeout for connection
+        const connectionTimeout = setTimeout(() => {
+          console.log('WebSocket connection timeout');
+          if (this.socket && this.socket.readyState !== WebSocket.OPEN) {
+            this.socket.close();
+            resolve(false);
+          }
+        }, 5000);
         
         this.socket.onopen = () => {
-          console.log('WebSocket connected');
+          console.log('WebSocket connected successfully');
+          clearTimeout(connectionTimeout);
           this.reconnectAttempts = 0;
-          this.useLocalSync = false;
           
           // Notifier tous les écouteurs de la connexion établie
           this.notifyListeners('connection', { status: 'connected' });
@@ -89,6 +123,7 @@ class WebSocketService {
         
         this.socket.onclose = () => {
           console.log('WebSocket connection closed');
+          clearTimeout(connectionTimeout);
           
           // Notifier les écouteurs de la déconnexion
           this.notifyListeners('connection', { status: 'disconnected' });
@@ -99,16 +134,10 @@ class WebSocketService {
         
         this.socket.onerror = (error) => {
           console.error('WebSocket error:', error);
+          clearTimeout(connectionTimeout);
           // Socket will automatically close after error
           resolve(false);
         };
-        
-        // Timeout au cas où la connexion prend trop de temps
-        setTimeout(() => {
-          if (this.socket && this.socket.readyState !== WebSocket.OPEN) {
-            resolve(false);
-          }
-        }, 5000);
         
       } catch (error) {
         console.error('Failed to establish WebSocket connection:', error);
@@ -138,12 +167,11 @@ class WebSocketService {
   }
   
   isConnected(): boolean {
-    if (this.useLocalSync) return false;
     return this.socket !== null && this.socket.readyState === WebSocket.OPEN;
   }
   
   sendMessage(type: string, payload: any) {
-    // Diffuser aux autres onglets via BroadcastChannel
+    // Always broadcast to other tabs via BroadcastChannel
     if (broadcastChannel) {
       broadcastChannel.postMessage({ type, payload });
     }
@@ -151,8 +179,8 @@ class WebSocketService {
     // Notifier les écouteurs locaux
     this.notifyListeners(type, payload);
     
-    // Envoyer via WebSocket si disponible
-    if (!this.useLocalSync && this.socket && this.socket.readyState === WebSocket.OPEN) {
+    // Try to send via WebSocket if available
+    if (this.socket && this.socket.readyState === WebSocket.OPEN) {
       try {
         this.socket.send(JSON.stringify({ type, payload }));
         return true;
@@ -161,7 +189,8 @@ class WebSocketService {
       }
     }
     
-    return this.useLocalSync; // Considéré comme réussi en mode local
+    // Return true if we at least sent via BroadcastChannel
+    return broadcastChannel !== null;
   }
   
   subscribe(eventType: string, callback: (data: any) => void) {
@@ -201,10 +230,6 @@ class WebSocketService {
     if (this.socket) {
       this.socket.close();
       this.socket = null;
-    }
-    
-    if (broadcastChannel) {
-      broadcastChannel.close();
     }
   }
 }

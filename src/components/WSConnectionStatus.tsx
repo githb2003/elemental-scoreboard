@@ -1,4 +1,5 @@
 
+import { useEffect, useState } from 'react';
 import useWebSocket from '@/hooks/useWebSocket';
 import { Button } from '@/components/ui/button';
 
@@ -8,6 +9,19 @@ interface WSConnectionStatusProps {
 
 const WSConnectionStatus = ({ className = '' }: WSConnectionStatusProps) => {
   const { isConnected, reconnect } = useWebSocket();
+  const [showLocalSyncMessage, setShowLocalSyncMessage] = useState(false);
+  
+  // Show local sync message after a delay if not connected
+  useEffect(() => {
+    if (!isConnected) {
+      const timer = setTimeout(() => {
+        setShowLocalSyncMessage(true);
+      }, 3000);
+      return () => clearTimeout(timer);
+    } else {
+      setShowLocalSyncMessage(false);
+    }
+  }, [isConnected]);
 
   return (
     <div className={`p-4 rounded-md ${className} ${isConnected ? 'bg-green-950/20' : 'bg-red-950/20'}`}>
@@ -21,8 +35,13 @@ const WSConnectionStatus = ({ className = '' }: WSConnectionStatusProps) => {
           <div className="flex items-center gap-2">
             <span className="h-2 w-2 rounded-full bg-red-500"></span>
             <span className="text-sm">
-              La connexion WebSocket n'est pas établie.<br className="sm:hidden" />
-              <span className="text-gray-400">Les mises à jour fonctionnent entre onglets uniquement.</span>
+              La connexion WebSocket n'est pas établie.
+              <br className="sm:hidden" />
+              <span className="text-gray-400">
+                {showLocalSyncMessage 
+                  ? "Synchronisation entre onglets active." 
+                  : "Tentative de connexion..."}
+              </span>
             </span>
           </div>
           <Button variant="destructive" onClick={reconnect} size="sm">

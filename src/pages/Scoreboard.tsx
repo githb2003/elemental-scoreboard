@@ -9,23 +9,26 @@ import WSConnectionStatus from '@/components/WSConnectionStatus';
 
 const Scoreboard = () => {
   const [elements, setElements] = useState<Element[]>(() => {
-    const savedElements = localStorage.getItem('elemental-scores') ?? JSON.stringify([
+    const savedElements = localStorage.getItem('elemental-scores');
+    return savedElements ? JSON.parse(savedElements) : [
       { id: 'fire', name: 'Feu', color: 'fire', points: 0, icon: 'fire' },
       { id: 'earth', name: 'Terre', color: 'earth', points: 0, icon: 'earth' },
       { id: 'air', name: 'Air', color: 'air', points: 0, icon: 'airVent' },
       { id: 'water', name: 'Eau', color: 'water', points: 0, icon: 'droplet' },
       { id: 'lightning', name: 'Foudre', color: 'lightning', points: 0, icon: 'cloudLightning' },
-    ]);
-    return JSON.parse(savedElements);
+    ];
   });
 
   const navigate = useNavigate();
   const { subscribeToScoreUpdates } = useWebSocket();
 
   useEffect(() => {
+    // Subscribe to score updates from WebSocket or BroadcastChannel
     const unsubscribe = subscribeToScoreUpdates((updatedElements) => {
-      setElements(updatedElements);
-      localStorage.setItem('elemental-scores', JSON.stringify(updatedElements));
+      if (updatedElements && Array.isArray(updatedElements)) {
+        setElements(updatedElements);
+        localStorage.setItem('elemental-scores', JSON.stringify(updatedElements));
+      }
     });
     
     return () => {
