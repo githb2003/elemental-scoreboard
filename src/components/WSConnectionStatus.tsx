@@ -5,15 +5,16 @@ import { Button } from '@/components/ui/button';
 
 interface WSConnectionStatusProps {
   className?: string;
+  hideErrors?: boolean;
 }
 
-const WSConnectionStatus = ({ className = '' }: WSConnectionStatusProps) => {
+const WSConnectionStatus = ({ className = '', hideErrors = false }: WSConnectionStatusProps) => {
   const { isConnected, reconnect } = useWebSocket();
   const [showLocalSyncMessage, setShowLocalSyncMessage] = useState(false);
   
-  // Show local sync message after a delay if not connected
+  // Masquer les messages d'erreur si hideErrors est true
   useEffect(() => {
-    if (!isConnected) {
+    if (!isConnected && !hideErrors) {
       const timer = setTimeout(() => {
         setShowLocalSyncMessage(true);
       }, 3000);
@@ -21,7 +22,9 @@ const WSConnectionStatus = ({ className = '' }: WSConnectionStatusProps) => {
     } else {
       setShowLocalSyncMessage(false);
     }
-  }, [isConnected]);
+  }, [isConnected, hideErrors]);
+
+  if (hideErrors) return null;
 
   return (
     <div className={`p-4 rounded-md ${className} ${isConnected ? 'bg-green-950/20' : 'bg-red-950/20'}`}>

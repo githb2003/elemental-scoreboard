@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Element } from '@/types/elements';
 import ElementCard from '@/components/ElementCard';
@@ -23,7 +22,6 @@ const Scoreboard = () => {
   const { subscribeToScoreUpdates } = useWebSocket();
 
   useEffect(() => {
-    // Subscribe to score updates from WebSocket or BroadcastChannel
     const unsubscribe = subscribeToScoreUpdates((updatedElements) => {
       if (updatedElements && Array.isArray(updatedElements)) {
         setElements(updatedElements);
@@ -85,7 +83,7 @@ const Scoreboard = () => {
         </div>
         
         <div className="fixed top-4 left-4 z-50 w-48">
-          <WSConnectionStatus />
+          <WSConnectionStatus hideErrors={true} />
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 h-screen items-center px-4">

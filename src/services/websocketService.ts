@@ -1,4 +1,3 @@
-
 // A simple WebSocket service for real-time updates
 
 // Utilisons BroadcastChannel pour la communication entre onglets
@@ -25,7 +24,8 @@ class WebSocketService {
     }
   }
   
-  connect() {
+  connect(options: { silent?: boolean } = {}) {
+    const { silent = false } = options;
     // Si déjà en train de se connecter, renvoyer la promesse existante
     if (this.connectionPromise && this.socket && this.socket.readyState === WebSocket.CONNECTING) {
       return this.connectionPromise;
@@ -41,14 +41,22 @@ class WebSocketService {
       // Fallback to local sync immediately to ensure functionality
       this.useLocalSync = true;
       
+      if (!silent) {
+        console.log('WebSocket connection attempt...');
+      }
+      
       // Try WebSocket connection
-      this.connectWebSocket()
+      this.connectWebSocket(silent)
         .then(success => {
           if (success) {
             this.useLocalSync = false;
-            console.log('WebSocket connection established');
+            if (!silent) {
+              console.log('WebSocket connection established');
+            }
           } else {
-            console.log('WebSocket connection failed, using local sync only');
+            if (!silent) {
+              console.log('WebSocket connection failed, using local sync only');
+            }
           }
           if (this.connectionResolve) {
             this.connectionResolve(true);
@@ -60,7 +68,7 @@ class WebSocketService {
     return this.connectionPromise;
   }
   
-  private connectWebSocket(): Promise<boolean> {
+  private connectWebSocket(silent: boolean): Promise<boolean> {
     return new Promise((resolve) => {
       try {
         // Fermer toute connexion existante
@@ -87,13 +95,17 @@ class WebSocketService {
           wsUrl = `${protocol}//${host}/ws`;
         }
         
-        console.log(`Attempting WebSocket connection to ${wsUrl}`);
+        if (!silent) {
+          console.log(`Attempting WebSocket connection to ${wsUrl}`);
+        }
         
         this.socket = new WebSocket(wsUrl);
         
         // Set a timeout for connection
         const connectionTimeout = setTimeout(() => {
-          console.log('WebSocket connection timeout');
+          if (!silent) {
+            console.log('WebSocket connection timeout');
+          }
           if (this.socket && this.socket.readyState !== WebSocket.OPEN) {
             this.socket.close();
             resolve(false);
@@ -101,7 +113,9 @@ class WebSocketService {
         }, 5000);
         
         this.socket.onopen = () => {
-          console.log('WebSocket connected successfully');
+          if (!silent) {
+            console.log('WebSocket connected successfully');
+          }
           clearTimeout(connectionTimeout);
           this.reconnectAttempts = 0;
           
@@ -122,13 +136,15 @@ class WebSocketService {
         };
         
         this.socket.onclose = () => {
-          console.log('WebSocket connection closed');
+          if (!silent) {
+            console.log('WebSocket connection closed');
+          }
           clearTimeout(connectionTimeout);
           
           // Notifier les écouteurs de la déconnexion
           this.notifyListeners('connection', { status: 'disconnected' });
           
-          this.attemptReconnect();
+          this.attemptReconnect(silent);
           resolve(false);
         };
         
@@ -146,7 +162,7 @@ class WebSocketService {
     });
   }
   
-  private attemptReconnect() {
+  private attemptReconnect(silent: boolean) {
     if (this.reconnectAttempts >= this.maxReconnectAttempts) {
       console.log('Max reconnect attempts reached');
       this.useLocalSync = true;
@@ -161,8 +177,10 @@ class WebSocketService {
     }
     
     this.reconnectTimeout = setTimeout(() => {
-      console.log(`Attempting to reconnect (${this.reconnectAttempts}/${this.maxReconnectAttempts})`);
-      this.connectWebSocket();
+      if (!silent) {
+        console.log(`Attempting to reconnect (${this.reconnectAttempts}/${this.maxReconnectAttempts})`);
+      }
+      this.connectWebSocket(silent);
     }, delay);
   }
   

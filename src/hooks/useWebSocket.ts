@@ -5,10 +5,14 @@ import { websocketService } from '@/services/websocketService';
 interface WebSocketOptions {
   autoConnect?: boolean;
   reconnect?: boolean;
+  silentMode?: boolean;
 }
 
 export const useWebSocket = (options: WebSocketOptions = {}) => {
-  const { autoConnect = true } = options;
+  const { 
+    autoConnect = true, 
+    silentMode = true  // Nouveau paramètre pour mode silencieux
+  } = options;
   const [isConnected, setIsConnected] = useState(websocketService.isConnected());
   const [lastMessage, setLastMessage] = useState<any>(null);
   
@@ -18,7 +22,7 @@ export const useWebSocket = (options: WebSocketOptions = {}) => {
   // Initialize connection
   useEffect(() => {
     if (autoConnect) {
-      websocketService.connect();
+      websocketService.connect({ silent: silentMode });
       
       // Listen for connection changes
       const unsubscribe = websocketService.subscribe('connection', (data) => {
@@ -33,7 +37,7 @@ export const useWebSocket = (options: WebSocketOptions = {}) => {
       subscriptions.current.forEach(unsubscribe => unsubscribe());
       subscriptions.current = [];
     };
-  }, [autoConnect]);
+  }, [autoConnect, silentMode]);
   
   // Function to subscribe to specific events
   const subscribe = useCallback((eventType: string, callback: (data: any) => void) => {
@@ -49,8 +53,8 @@ export const useWebSocket = (options: WebSocketOptions = {}) => {
   
   // Force reconnection
   const reconnect = useCallback(() => {
-    return websocketService.connect();
-  }, []);
+    return websocketService.connect({ silent: silentMode });
+  }, [silentMode]);
   
   // Common use case: subscribe to score updates
   const subscribeToScoreUpdates = useCallback((callback: (elements: any[]) => void) => {

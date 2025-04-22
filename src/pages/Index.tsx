@@ -5,9 +5,9 @@ import AdminPanel from '@/components/AdminPanel';
 import DashboardHeader from '@/components/DashboardHeader';
 import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { websocketService } from '@/services/websocketService';
 import useWebSocket from '@/hooks/useWebSocket';
 import PasswordProtection from '@/components/PasswordProtection';
+import WSConnectionStatus from '@/components/WSConnectionStatus';
 import { Button } from '@/components/ui/button';
 
 const initialElements: Element[] = [
@@ -169,6 +169,9 @@ const Index = () => {
         </TabsList>
         
         <TabsContent value="scores" className="py-2">
+          <div className="fixed top-4 left-4 z-50 w-48">
+            <WSConnectionStatus hideErrors={true} />
+          </div>
           <div className="grid grid-cols-5 gap-4 h-screen items-center px-4">
             {elements.map(element => (
               <ElementCard 
@@ -180,6 +183,9 @@ const Index = () => {
         </TabsContent>
         
         <TabsContent value="admin" className="pt-12 pb-8">
+          <div className="fixed top-4 left-4 z-50 w-48">
+            <WSConnectionStatus hideErrors={true} />
+          </div>
           <PasswordProtection>
             <AdminPanel 
               elements={elements}
